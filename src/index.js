@@ -112,18 +112,5 @@ app.post('/archives/:archiveId/restart', async (req, res, next) => {
   }
 });
 
-// Get Archive Offsets
-app.get('/archives/offset', async (req, res, next) => {
-  try {
-    const { archiveId } = req.params;
-    const { sessionName } = req.body;
-    const archive = await opentok.restartArchive(archiveId, sessionName);
-    console.log(`Restarted Archive: ${archiveId} - ${archive.id}`);
-    res.json(archive);
-  } catch (error) {
-    next(error);
-  }
-});
-
 const httpServer = http.createServer(app);
 httpServer.listen(listenPort, listenIp, () => console.log(`Server listening on ${listenIp}:${listenPort}`));
