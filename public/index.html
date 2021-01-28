@@ -1,0 +1,140 @@
+<html>
+  <head>
+      <title>Dual Session User</title>
+      <script src="https://static.opentok.com/v2/js/opentok.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/opentok-layout-js@3.7.1/opentok-layout.min.js"></script>
+      <style type="text/css" media="screen">
+          #layoutContainer {
+              width: 100%;
+              height: 100%;
+              background-color: #DDD;
+              position:relative;
+          }
+      </style>
+  </head>
+
+  <body>
+      <div id="layoutContainer">
+          <div id="publisherContainer"></div>
+      </div>
+
+      <div id="hiddenPublisher" style="display: none;"></div>
+  </body>
+
+  <script type="text/javascript" charset="utf-8">
+      const layoutContainer = document.getElementById("layoutContainer");
+      const layout = initLayoutContainer(layoutContainer).layout;
+
+      let apiKey;
+      let sessionIds;
+      let tokens;
+      let sessions = {};
+
+      async function getApiKey() {
+        try {
+          const url = '/apiKey';
+          const response = await fetch(url);
+          const data = await response.json();
+          apiKey = data.apiKey;
+          console.log(apiKey);
+          return Promise.resolve();
+        } catch (error) {
+          return Promise.reject(error);
+        }
+      }
+
+      async function getSessionIds() {
+        try {
+          const url = '/sessionIds';
+          const response = await fetch(url);
+          sessionIds = await response.json();
+          console.log(sessionIds);
+          return Promise.resolve();
+        } catch (error) {
+          return Promise.reject(error);
+        }
+      }
+
+      async function getTokens() {
+        try {
+          const url = '/tokens';
+          const response = await fetch(url);
+          tokens = await response.json();
+          console.log(tokens);
+          return Promise.resolve();
+        } catch (error) {
+          return Promise.reject(error);
+        }
+      }
+
+      async function joinSessionWithSubscribe(apiKey, sessionId, token) {
+        const session = OT.initSession(sessionId);
+        session.on("streamCreated", function(event){
+          session.subscribe(event.stream, "layoutContainer", { insertMode: "append" });
+          layout();
+        });
+        session.connect(apiKey, token, function (err) {
+            if (err) {
+              console.error(err);
+              alert(err.message);
+            }
+            session.publish("publisherContainer");
+            layout();
+        });
+        session.on('signal', async function(event) {
+          if (event.type === 'signal:join') {
+            console.log('join received');
+            if (sessions.secondary != null) {
+              await leaveSession(sessions.secondary);
+              sessions.secondary = null;
+            }
+            sessions.secondary = await joinSessionNoSubscribe(apiKey, sessionIds.secondary, tokens.secondary);
+          } else if (event.type === 'signal:leave') {
+            console.log('leave received');
+            if (sessions.secondary != null) {
+              await leaveSession(sessions.secondary);
+              sessions.secondary = null;
+            }
+          } else {
+            console.log('signal received');
+            console.log(event);
+          }
+        });
+
+        return Promise.resolve(session);
+      }
+
+      async function joinSessionNoSubscribe(apiKey, sessionId, token) {
+        const session = OT.initSession(sessionId);
+        session.connect(apiKey, token, function (err) {
+            if (err) {
+              console.error(err);
+              alert(err.message);
+            }
+            session.publish("hiddenPublisher");
+            layout();
+        });
+
+        return Promise.resolve(session);
+      }
+
+      async function leaveSession(session) {
+        session.disconnect();
+        console.log('disconnected from session');
+      }
+
+      async function initialize() {
+        try {
+          await getApiKey();
+          await getSessionIds();
+          await getTokens();
+          sessions.primary = await joinSessionWithSubscribe(apiKey, sessionIds.primary, tokens.primary);
+        } catch (error) {
+          console.error(error);
+          alert(error.message);
+        }
+      }
+
+      initialize();
+  </script>
+</html>

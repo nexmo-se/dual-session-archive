@@ -1,0 +1,49 @@
+{
+  "name": "Dual Session Archiving",
+  "description": "Gapless Archiving using Two Sessions",
+  "repository": "https://github.com/nexmo-se/dual-session-archive",
+  "logo": "https://node-js-sample.herokuapp.com/node.png",
+  "env": {
+    "API_KEY": {
+      "desription": "Opentok API Key",
+      "required": true
+    },
+    "API_SECRET" : {
+      "description": "Opentok API Secret",
+      "required": true
+    },
+    "SESSION_ID_PRIMARY": {
+      "description": "Primary Session ID - main session ID",
+      "required": true
+    },
+    "SESSION_ID_SECONDARY": {
+      "description": "Secondary Session ID - interim archiving session ID",
+      "required": true
+    },
+    "SESSION_JOIN_DELAY": {
+      "description": "(seconds) Delay after sending join signal (to join secondary session)",
+      "required": true,
+      "value": "5"
+    },
+    "SESSION_STOP_DELAY_PRIMARY": {
+      "description": "(seconds) Delay after starting secondary session before stopping primary session",
+      "required": true,
+      "value": "1"
+    },
+    "SESSION_STOP_DELAY_SECONDARY": {
+      "description": "(seconds) Delay after restarting primary session before stopping secondary session",
+      "required": true,
+      "value": "1"
+    },
+    "PLAYER_OFFSET_PRIMARY": {
+      "description": "(seconds) Offset in player on every odd index videos",
+      "required": true,
+      "value": "0"
+    },
+    "PLAYER_OFFSET_SECONDARY": {
+      "description": "(seconds) Offset in player on every even index videos (except first)",
+      "required": true,
+      "value": "0"
+    }
+  }
+}

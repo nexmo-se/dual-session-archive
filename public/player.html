@@ -1,0 +1,96 @@
+<html>
+  <head>
+    <title>Player</title>
+  </head>
+
+  <body>
+    <div style="width: 100%; display: flex; flex-direction: row;">
+      <label>Archive Name</label>
+      <input type="text" id="sessionName" placeholder="enter archive name"/>
+      <button onclick="playArchives()">Get Archive</button>
+    </div>
+    <div>
+      <video id="player" autoplay autobuffer controls></video>
+
+      <h3>Playlist</h3>
+      <div id="playlist" style="width: 100%;"></div>
+    </div>
+  </body>
+
+  <script>
+    const videoPlayer = document.getElementById('player');
+    let offsets = {
+      primary: 0,
+      secondary: 0,
+    };
+
+    async function getOffsets() {
+      try {
+        const url = `/archives/offset`;
+        const response = await fetch(url);
+        offsets = await response.json();
+        return Promise.resolve();
+      } catch (error) {
+        return Promise.reject(error);
+      }
+    }
+
+    async function playArchives() {
+      try {
+        const sessionName = document.getElementById('sessionName').value;
+        const url = `/archives?name=${sessionName}`;
+        const response = await fetch(url);
+        const archives = await response.json();
+
+        await getOffsets();
+        loadPlaylist(archives);
+        await playVideo(archives, 0);
+        return Promise.resolve();
+      } catch (error) {
+        return Promise.reject(error);
+      }
+    }
+    
+    function loadPlaylist(archives) {
+      const playlistElement = document.getElementById('playlist');
+      playlistElement.innerHTML = '';
+
+      for (let i = 0; i < archives.length; i += 1) {
+        const archive = archives[i];
+        
+        const { name, duration } = archive;
+        const seconds = duration % 60;
+        const minutes = Math.floor(duration / 60) % 60;
+        const hours = Math.floor(duration / 3600);
+
+        const text = `${name}-${i+1} ${hours}:${`0${minutes}`.slice(-2)}:${`0${seconds}`.slice(-2)}`;
+
+        const textElement = document.createElement('div');
+        textElement.innerText = text;
+
+        playlistElement.appendChild(textElement);
+      }
+    }
+
+    function playVideo(archives, index = 0) {
+      if (index < archives.length) {
+        let offset = 0;
+
+        if (index > 0) {
+          if (index % 2 === 0) {
+            offset = offsets.primary;
+          } else {
+            offset = offsets.secondary;
+          }
+        }
+        
+        console.log(`Playing Video ${index + 1}/${archives.length}`);
+        console.log(`Offset: ${offset} seconds`);
+        videoPlayer.src = archives[index].url;
+        videoPlayer.onended = () => playVideo(archives, index + 1)
+        videoPlayer.currentTime = offset;
+        videoPlayer.play();
+      }
+    }
+  </script>
+</html>
