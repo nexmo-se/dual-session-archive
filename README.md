@@ -50,12 +50,85 @@ POC/Demo application built for Gapless Archiving using Two Sessions
 4. Watch the full archiving playlist (back-to-back autoplay) of the entire session. There should be no missing gap of the video, but some overlapping between session 1 and session 2 archives may happen.
 
 ### APIs
-#### Get Api Key
-#### Get Session IDs
-#### Get Tokens
-#### Start Archive
-#### Stop Archive
-#### Restart Archive
-#### List Archives
-#### Get Archive Offsets
+The followings are APIs that are implemented in the backend server of the application.
 
+#### Get Api Key
+```
+GET /apiKey
+```
+
+Response
+```
+{
+  "apiKey": STRING
+}
+```
+
+#### Get Session IDs
+```
+GET /sessionIds
+```
+
+Response
+```
+{
+  "primary": STRING (session 1),
+  "secondary": STRING (session 2)
+}
+```
+
+#### Get Tokens
+```
+GET /tokens
+```
+
+Response
+```
+{
+  "primary": STRING (session 1),
+  "secondary": STRING (session 2)
+}
+```
+
+#### Start Archive
+```
+POST /archives
+
+{
+  "sessionName": STRING (name of the archive)
+}
+```
+
+#### Stop Archive
+```
+POST /archives/:archiveId/stop
+```
+
+#### Restart Archive
+```
+POST /archives/:archiveId/restart
+
+{
+  "sessionName": STRING (name of the archive)
+}
+```
+
+#### List Archives
+```
+GET /archives
+```
+
+#### Get Archive Offsets
+Get the offset used when playback.
+
+```
+GET /archives/:archiveId/offset
+```
+
+Response
+```
+{
+  "primary": INTEGER (session 1),
+  "secondary": INTEGER (session 2),
+}
+```
